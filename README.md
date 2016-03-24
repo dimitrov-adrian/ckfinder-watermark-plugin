@@ -27,7 +27,7 @@ config.Watermark = {
   // If you want to trim the available positions,
   // then you could use this option.
   positions: [
-    // '<TOP|MIDDLE|BOTTOM> <LEFT|CENTER|RIGHT>',
+    // '<top|middle|bottom> <left|center|right>',
     'top left',
     'bottom right',
     'middle center'
