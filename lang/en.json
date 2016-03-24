@@ -1,0 +1,25 @@
+{
+  "name": "Watermark",
+  "values": {
+    "watermark": "Watermark",
+    "title": "Add watermark to image - <em>%</em>",
+    "applyConfirm": "Are you sure you want to continue? This action will add watermark to image permanently.",
+    "error": "Error",
+    "ok": "OK",
+    "watermarkApplied": "Watermark is applied successful.",
+    "unexpectedError": "[%] Unexpected error.",
+    "applyButtonText": "Apply & Save",
+    "cancelButtonText": "Cancel",
+    "choiceWatermark": "- Choice Watermark -",
+    "choicePosition": "- Choice Position -",
+    "topleft": "Top Left",
+    "topcenter": "Top Center",
+    "topright": "Top Right",
+    "middleleft": "Middle Left",
+    "middlecenter": "Middle Center",
+    "middleright": "Middle Right",
+    "bottomleft": "Bottom Left",
+    "bottomcenter": "Bottom Center",
+    "bottomright": "Bottom Right"
+  }
+}

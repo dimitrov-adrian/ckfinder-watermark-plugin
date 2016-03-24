@@ -1,0 +1,25 @@
+{
+  "name": "Watermark",
+  "values": {
+    "watermark": "Воден знак",
+    "title": "Добавяне на воден знак към - <em>%</em>",
+    "applyConfirm": "Сигурни ли сте, че желаете да продълците? Това действие ще добави воден знак към картинката завинаги.",
+    "error": "Грешка",
+    "ok": "ОК",
+    "watermarkApplied": "Водния знак е добавен успешно.",
+    "unexpectedError": "[%] Неочаквана грешка",
+    "applyButtonText": "Прилагане и запис",
+    "cancelButtonText": "Отказ",
+    "choiceWatermark": "- Избор на воден знак -",
+    "choicePosition": "- Избор на позиция -",
+    "topleft": "Горно ляво",
+    "topcenter": "Горно централно",
+    "topright": "Горно дясно",
+    "middleleft": "Средно ляво",
+    "middlecenter": "Средно център",
+    "middleright": "Средно дясно",
+    "bottomleft": "Долно ляво",
+    "bottomcenter": "Долно централно",
+    "bottomright": "Долно дясно"
+  }
+}
