@@ -10,7 +10,7 @@ An Watermark plugin for [CKFinder](http://ckfinder.com/) with GUI and preview op
 
 To add the plugin to CKFinder:
 
-#### 1. Download plugin and extract it to the `<ckfinder>/plugins` folder (`<ckfinder>/plugins/Watermark`)
+#### 1. Download plugin and extract as `<ckfinder>/plugins/Watermark`
 #### 2. Client side
 ##### 2.1. Enable from client side configuration `<ckfinder>/config.js` [`config.plugins`](http://docs.cksource.com/ckfinder3/#!/api/CKFinder.Config-cfg-plugins) option.
 ```js
@@ -22,21 +22,51 @@ config.plugins = [
 ##### 2.2. Setup from configuration `<ckfinder>/config.js` option
 ```js
 config.Watermark = {
+
+  // OPTIONAL
+  // If you want to trim the available positions,
+  // then you could use this option.
+  positions: [
+    // '<TOP|MIDDLE|BOTTOM> <LEFT|CENTER|RIGHT>',
+    'top left',
+    'bottom right',
+    'middle center'
+  ]
+  
+  // REQUIRED
   watermarks: [
+  
     {
-      file: '<URL TO WATERMARK IMAGE>',
-      label: '<LABEL FOR WATERMARK>',
-      size: '<MAX WIDTH/HEIGHT IN PERCENTAGE WITHOUT SIGN>',
+      // All config options (file, label and size) ARE REQUIRED.
+      
+      // URL to image file, for better results use PNG files
+      // with suitable resolution.
+      file: '<STRING: URL TO WATERMARK IMAGE>',
+     
+      // Text label to show in watermark selector.
+      label: '<STRING: LABEL FOR WATERMARK>',
+      
+      // Max size height/width for watermark in percents of main image.
+      // Example:
+      //   If main image is 1600x1200 and size is set to 10,
+      //   then watermark will have max width 160px
+      //   and height 120px, if the image is smaller than
+      //   this size, then it will not be up-scaled.
+      size: '<STRING: MAX SIZE FOR IMAGE>',
     },
-    // Example
+
+    // Simple example.
     {
       file: 'http://example.com/watermark.png',
       label: 'Example Watermark',
       size: '10'
     },
+    
+    // ...
   ]
 };
 ```
+
 #### 3. Server side enabling via `<ckfinder>/config.php`
 ```php
 // Add
@@ -52,10 +82,15 @@ You are not enabled server side plugin from `config.php`
 When by some reason image could not be processed or something happen on server side, it is possible to get such message.
 Agenda of codes and meanings:
 
-> -100  - Missing request arguments.
-> -11   - Source file is not image.
-> -12   - Source file is image but not supported.
-> -21   - Error while fetching watermark file.
-> -22   - Watermark file is not supported.
-> -30   - Error while processing watermarked image.
-> -31   - Error while saving watermarked image file.
+> * -100  - Missing request arguments.
+> * -11   - Source file is not image.
+> * -12   - Source file is image but not supported.
+> * -21   - Error while fetching watermark file.
+> * -22   - Watermark file is not supported.
+> * -30   - Error while processing watermarked image.
+> * -31   - Error while saving watermarked image file.
+
+## FAQ
+
+#### Q: How can I add offset
+A: You can't, it is not supported right now, better option is to prepare watermark images with offset on it.

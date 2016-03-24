@@ -41,7 +41,7 @@
   use CKSource\CKFinder\Image;
 
   /**
-   * GetFileInfo command plugin class.
+   * Watermark command plugin class.
    */
   class Watermark extends CommandAbstract implements PluginInterface
   {

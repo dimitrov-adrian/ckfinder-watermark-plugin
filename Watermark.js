@@ -261,6 +261,45 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
 
         });
 
+        var allPositions = [
+          {
+            position: 'top left',
+            label: finder.lang.Watermark.topleft
+          },
+          {
+            position: 'top center',
+            label: finder.lang.Watermark.topcenter
+          },
+          {
+            position: 'top right',
+            label: finder.lang.Watermark.topright
+          },
+          {
+            position: 'middle left',
+            label: finder.lang.Watermark.middleleft
+          },
+          {
+            position: 'middle center',
+            label: finder.lang.Watermark.middlecenter
+          },
+          {
+            position: 'middle right',
+            label: finder.lang.Watermark.middleright
+          },
+          {
+            position: 'bottom left',
+            label: finder.lang.Watermark.bottomleft
+          },
+          {
+            position: 'bottom center',
+            label: finder.lang.Watermark.bottomcenter
+          },
+          {
+            position: 'bottom right',
+            label: finder.lang.Watermark.bottomright
+          }
+        ];
+
         // Define view model options, so to allow overriding.
         var modelOptions = {
           text: finder.lang.Watermark,
@@ -275,42 +314,6 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
             {
               position: '',
               label: finder.lang.Watermark.choicePosition
-            },
-            {
-              position: 'top left',
-              label: finder.lang.Watermark.topleft
-            },
-            {
-              position: 'top center',
-              label: finder.lang.Watermark.topcenter
-            },
-            {
-              position: 'top right',
-              label: finder.lang.Watermark.topright
-            },
-            {
-              position: 'middle left',
-              label: finder.lang.Watermark.middleleft
-            },
-            {
-              position: 'middle center',
-              label: finder.lang.Watermark.middlecenter
-            },
-            {
-              position: 'middle right',
-              label: finder.lang.Watermark.middleright
-            },
-            {
-              position: 'bottom left',
-              label: finder.lang.Watermark.bottomleft
-            },
-            {
-              position: 'bottom center',
-              label: finder.lang.Watermark.bottomcenter
-            },
-            {
-              position: 'bottom right',
-              label: finder.lang.Watermark.bottomright
             }
           ]
         };
@@ -320,6 +323,18 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
           if (finder.config.Watermark.watermarks.hasOwnProperty(i)) {
             modelOptions.watermarks.push(finder.config.Watermark.watermarks[i]);
           }
+        }
+
+        // Setup positions.
+        if (finder.config.Watermark.hasOwnProperty('positions') && finder.config.Watermark.positions.length > 0) {
+          for (var i in allPositions) {
+            if (finder.config.Watermark.positions.indexOf(allPositions[i].position) > -1) {
+              modelOptions.positions.push(allPositions[i]);
+            }
+          }
+        }
+        else {
+          modelOptions.positions = modelOptions.positions.concat(allPositions);
         }
 
         // Create a View instance to be rendered in the page.
