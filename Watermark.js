@@ -90,14 +90,12 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
         template += '    </div>';
         template += '  </div>';
         template += '  <div id="watermark-toolbar-actions">';
-        template += '    <select name="file" data-inline="true">';
-        template += '    {{~it.watermarks :watermark}}<option value="{{=watermark.file}}">{{=watermark.label}}</option>{{~}}';
+        template += '    <select name="watermark" data-inline="true">';
+        template += '    {{~it.watermarks :watermark}}<option value="{{=watermark._index}}">{{=watermark.label}}</option>{{~}}';
         template += '    </select>';
-        template += '    <select name="position" data-inline="true">';
-        template += '    {{~it.positions :pos}}<option value="{{=pos.position}}">{{=pos.label}}</option>{{~}}';
-        template += '    </select>';
-        template += '    <button name="apply" data-inline="true">{{=it.text.applyButtonText}}</button>';
-        template += '    <button name="close" data-inline="true">{{=it.text.cancelButtonText}}</button>';
+        template += '    <button name="save" data-inline="true">{{=it.text.saveButtonText}}</button>';
+        template += '    <button name="save-as-new" data-inline="true">{{=it.text.saveAsNewButtonText}}</button>';
+        template += '    <button name="back" data-inline="true">{{=it.text.backButtonText}}</button>';
         template += '  </div>';
         template += '</div>';
 
@@ -111,83 +109,86 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
             size: 0
           },
 
+          // Template.
           template: doT.template(template),
 
+          // Handle events in template.
           events: {
+
             'change select': function(e) {
 
-              // Set watermark or position option.
-              this.currentOptions[e.currentTarget.name] = e.currentTarget.value;
+              if (e.currentTarget.name == 'watermark') {
 
-              // Set size option.
-              if (this.currentOptions.file) {
-                for (var i in finder.config.Watermark.watermarks) {
-                  if (finder.config.Watermark.watermarks.hasOwnProperty(i) && finder.config.Watermark.watermarks[i].file == this.currentOptions.file) {
-                    this.currentOptions.size = finder.config.Watermark.watermarks[i].size || null;
-                  }
-                }
-              }
-
-              var $watermark = jQuery('#watermark-preview-watermark', this.$el);
-
-              if (!this.currentOptions.position || !this.currentOptions.file || !this.currentOptions.size) {
-                $watermark.hide();
-                return false;
-              }
-
-              var maxSizePrcnt = this.currentOptions.size ? this.currentOptions.size + '%' : '';
-              var position = this.currentOptions.position.split(' ');
-              var recalculateStyle = function() {
-                var watermarkStyle = {
-                  maxWidth: maxSizePrcnt,
-                  maxHeight: maxSizePrcnt,
-                  position: 'absolute',
-                  marginTop: '',
-                  marginLeft: '',
-                  top: '',
-                  left: '',
-                  bottom: '',
-                  right: ''
-                };
-
-                // Vertical.
-                if (position[0] == 'top') {
-                  watermarkStyle.top = 0;
-                }
-                else if (position[0] == 'bottom') {
-                  watermarkStyle.bottom = 0;
+                if (e.currentTarget.value == 'none' || e.currentTarget.value == '') {
+                  this.currentOptions = {
+                    file: null,
+                    position: null,
+                    size: 0
+                  };
                 }
                 else {
-                  watermarkStyle.top = '50%';
-                  watermarkStyle.marginTop = -1 * Math.ceil($watermark.height() / 2);
+                  this.currentOptions = finder.config.Watermark.watermarks[e.currentTarget.value];
                 }
 
-                // Horizontal.
-                if (position[1] == 'left') {
-                  watermarkStyle.left = 0;
-                }
-                else if (position[1] == 'right') {
-                  watermarkStyle.right = 0;
-                }
-                else {
-                  watermarkStyle.left = '50%';
-                  watermarkStyle.marginLeft = -1 * Math.ceil($watermark.width() / 2);
+                var $watermark = jQuery('#watermark-preview-watermark', this.$el);
+                if (!this.currentOptions.file) {
+                  $watermark.hide();
+                  return false;
                 }
 
-                return watermarkStyle;
-              }.bind(this);
+                $watermark
+                  .not('.-event-watermark-reposition')
+                  .addClass('-event-watermark-reposition')
+                  .on('watermark-reposition', function(e, data) {
 
-              $watermark.attr('src', this.currentOptions.file);
-              $watermark.show().css(recalculateStyle());
-              $watermark.one('load', function() {
-                $(this).css(recalculateStyle());
-              });
+                    jQuery(this).show();
+
+                    var maxSizePrcnt = data.size ? data.size + '%' : '';
+                    jQuery(this).css({
+                      maxWidth: maxSizePrcnt,
+                      maxHeight: maxSizePrcnt,
+                      position: 'absolute'
+                    });
+
+                    var position = data.position.split(' ');
+                    var watermarkStyle = {
+                      marginTop: '',
+                      marginLeft: '',
+                      top: (position[0] == 'top' ? 0 : ''),
+                      bottom: (position[0] == 'bottom' ? 0 : ''),
+                      left: (position[1] == 'left' ? 0 : ''),
+                      right: (position[1] == 'right' ? 0 : '')
+                    };
+
+                    // Middle.
+                    if (position[0] == 'middle') {
+                      watermarkStyle.top = '50%';
+                      watermarkStyle.marginTop = -1 * Math.ceil(jQuery(this).height() / 2);
+                    }
+
+                    // Center.
+                    if (position[1] == 'center') {
+                      watermarkStyle.left = '50%';
+                      watermarkStyle.marginLeft = -1 * Math.ceil(jQuery(this).width() / 2);
+                    }
+                    jQuery(this).css(watermarkStyle);
+                  });
+
+                var currentOptions = this.currentOptions;
+                $watermark.attr('src', currentOptions.file);
+                $watermark.trigger('watermark-reposition', currentOptions);
+                $watermark.one('load', function() {
+                  jQuery(this).trigger('watermark-reposition', currentOptions);
+                });
+
+              }
 
             },
-            'click button': function(e) {
-              if (e.currentTarget.name == 'apply') {
 
-                if (!this.currentOptions.file || !this.currentOptions.position) {
+            'click button': function(e) {
+              if (e.currentTarget.name == 'save' || e.currentTarget.name == 'save-as-new') {
+
+                if (!this.currentOptions.file) {
                   return;
                 }
 
@@ -198,20 +199,24 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
                   buttons: ['ok','cancel']
                 });
                 finder.once('dialog:dialog-watermark-confirmdialog:ok', function(evt) {
-                  this.makeProcessorRequest();
+                  this.makeProcessorRequest(e.currentTarget.name);
                   finder.request('dialog:destroy', { name: 'dialog-watermark-confirmdialog' });
                 }.bind(this));
                 finder.once('dialog:dialog-watermark-confirmdialog:cancel', function(evt) {
                   finder.request('dialog:destroy', { name: 'dialog-watermark-confirmdialog' });
                 });
               }
-              else if (e.currentTarget.name == 'close') {
+              else if (e.currentTarget.name == 'back') {
                 finder.request('page:destroy', { name: 'watermark-page' });
               }
             }
+
           },
 
-          makeProcessorRequest: function() {
+          /**
+           * Processor request action.
+           */
+          makeProcessorRequest: function(action) {
 
             // @TODO make this more nice.
             var selectedFiles = finder.request('files:getSelected');
@@ -219,6 +224,7 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
 
             var params = this.currentOptions;
             params.fileName = file.get('name');
+            params._action = action;
 
             // Make processing request.
             finder.request('command:send', {
@@ -229,11 +235,12 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
               if (response.status) {
                 var $image = jQuery('#watermark-preview-image', this.$el);
                 var imageUrl = $image.attr('src');
-                var imageUrlNew = imageUrl.split('?')[0] + '?r=' + Date.now();
+                var imageUrlNew = imageUrl.split('?')[0] + '?v=' + Date.now();
                 $image.attr('src', imageUrlNew);
                 jQuery(':input', this.$el).val('').trigger('change');
                 this.currentOptions.file = null;
                 this.currentOptions.position = null;
+                finder.request('page:destroy', { name: 'watermark-page' });
                 finder.request('dialog', {
                   name: 'dialog-watermark-okdialog',
                   title: finder.lang.Watermark.ok,
@@ -242,6 +249,7 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
                 });
                 finder.once('dialog:dialog-watermark-okdialog:ok', function(evt) {
                   finder.request('dialog:destroy', { name: 'dialog-watermark-dialog' });
+                  finder.request('folder:refreshFiles');
                 });
               }
               else {
@@ -261,59 +269,14 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
 
         });
 
-        var allPositions = [
-          {
-            position: 'top left',
-            label: finder.lang.Watermark.topleft
-          },
-          {
-            position: 'top center',
-            label: finder.lang.Watermark.topcenter
-          },
-          {
-            position: 'top right',
-            label: finder.lang.Watermark.topright
-          },
-          {
-            position: 'middle left',
-            label: finder.lang.Watermark.middleleft
-          },
-          {
-            position: 'middle center',
-            label: finder.lang.Watermark.middlecenter
-          },
-          {
-            position: 'middle right',
-            label: finder.lang.Watermark.middleright
-          },
-          {
-            position: 'bottom left',
-            label: finder.lang.Watermark.bottomleft
-          },
-          {
-            position: 'bottom center',
-            label: finder.lang.Watermark.bottomcenter
-          },
-          {
-            position: 'bottom right',
-            label: finder.lang.Watermark.bottomright
-          }
-        ];
-
         // Define view model options, so to allow overriding.
         var modelOptions = {
           text: finder.lang.Watermark,
           file: file,
           watermarks: [
             {
-              file: '',
+              _index: 'none',
               label: finder.lang.Watermark.choiceWatermark
-            }
-          ],
-          positions: [
-            {
-              position: '',
-              label: finder.lang.Watermark.choicePosition
             }
           ]
         };
@@ -321,20 +284,10 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
         // Add watermark options.
         for (var i in finder.config.Watermark.watermarks) {
           if (finder.config.Watermark.watermarks.hasOwnProperty(i)) {
-            modelOptions.watermarks.push(finder.config.Watermark.watermarks[i]);
+            var o = finder.config.Watermark.watermarks[i];
+            o._index = i;
+            modelOptions.watermarks.push(o);
           }
-        }
-
-        // Setup positions.
-        if (finder.config.Watermark.hasOwnProperty('positions') && finder.config.Watermark.positions.length > 0) {
-          for (var i in allPositions) {
-            if (finder.config.Watermark.positions.indexOf(allPositions[i].position) > -1) {
-              modelOptions.positions.push(allPositions[i]);
-            }
-          }
-        }
-        else {
-          modelOptions.positions = modelOptions.positions.concat(allPositions);
         }
 
         // Create a View instance to be rendered in the page.

@@ -8,18 +8,9 @@
     "ok": "OK",
     "watermarkApplied": "Watermark is applied successful.",
     "unexpectedError": "[%] Unexpected error.",
-    "applyButtonText": "Apply & Save",
-    "cancelButtonText": "Cancel",
-    "choiceWatermark": "- Choice Watermark -",
-    "choicePosition": "- Choice Position -",
-    "topleft": "Top Left",
-    "topcenter": "Top Center",
-    "topright": "Top Right",
-    "middleleft": "Middle Left",
-    "middlecenter": "Middle Center",
-    "middleright": "Middle Right",
-    "bottomleft": "Bottom Left",
-    "bottomcenter": "Bottom Center",
-    "bottomright": "Bottom Right"
+    "saveButtonText": "Save",
+    "saveAsNewButtonText": "Save as new file",
+    "backButtonText": "Back",
+    "choiceWatermark": "- Choice Watermark -"
   }
 }

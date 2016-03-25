@@ -23,17 +23,6 @@ config.plugins = [
 ```js
 config.Watermark = {
 
-  // OPTIONAL
-  // If you want to trim the available positions,
-  // then you could use this option.
-  positions: [
-    // '<top|middle|bottom> <left|center|right>',
-    'top left',
-    'bottom right',
-    'middle center'
-  ]
-  
-  // REQUIRED
   watermarks: [
   
     {
@@ -53,13 +42,20 @@ config.Watermark = {
       //   and height 120px, if the image is smaller than
       //   this size, then it will not be up-scaled.
       size: '<STRING: MAX SIZE FOR IMAGE>',
+
+      // Set position for this waterark.
+      // Value is space separated vertical and horizontal
+      // '<top|middle|bottom> <left|center|right>',
+      position: '<STRING: top|middle|bottom left|center|right>',
+
     },
 
     // Simple example.
     {
       file: 'http://example.com/watermark.png',
       label: 'Example Watermark',
-      size: '10'
+      size: '10',
+      position: 'top left'
     },
     
     // ...

@@ -8,18 +8,9 @@
     "ok": "ОК",
     "watermarkApplied": "Водния знак е добавен успешно.",
     "unexpectedError": "[%] Неочаквана грешка",
-    "applyButtonText": "Прилагане и запис",
-    "cancelButtonText": "Отказ",
-    "choiceWatermark": "- Избор на воден знак -",
-    "choicePosition": "- Избор на позиция -",
-    "topleft": "Горно ляво",
-    "topcenter": "Горно централно",
-    "topright": "Горно дясно",
-    "middleleft": "Средно ляво",
-    "middlecenter": "Средно център",
-    "middleright": "Средно дясно",
-    "bottomleft": "Долно ляво",
-    "bottomcenter": "Долно централно",
-    "bottomright": "Долно дясно"
+    "saveButtonText": "Запис",
+    "saveAsNewButtonText": "Запис като нов файл",
+    "backButtonText": "Назад",
+    "choiceWatermark": "- Избор на воден знак -"
   }
 }

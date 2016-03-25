@@ -66,8 +66,7 @@
      *
      * @return array Default plugin configuration
      */
-    public function getDefaultConfig()
-    {
+    public function getDefaultConfig() {
       return [];
     }
 
@@ -106,11 +105,13 @@
           unset($watermarkImageContent);
           if (!$watermarkImage) {
             return -22;
-
           }
+
           $watermarkMaxWidth = ceil($uploadedImage->getWidth()*$size/100);
           $watermarkMaxHeigh = ceil($uploadedImage->getHeight()*$size/100);
+
           $watermarkImage->resize($watermarkMaxWidth, $watermarkMaxHeigh, 100);
+
           $watermarkNewWidth = $watermarkImage->getWidth();
           $watermarkNewHeight = $watermarkImage->getHeight();
 
@@ -141,6 +142,7 @@
           }
 
           return $file->update($uploadedImage->getData()) ? 1 : -31;
+
         }
         else {
           return -12;
@@ -161,11 +163,12 @@
      *
      * @throws \Exception
      */
-    public function execute(Request $request, WorkingFolder $workingFolder)
-    {
+    public function execute(Request $request, WorkingFolder $workingFolder) {
+
       $watermark_image = $request->get('file');
       $watermark_position = $request->get('position');
       $watermark_size = $request->get('size');
+      $update = $request->get('_action') == 'save';
 
       $backend = $workingFolder->getBackend();
       if (!$workingFolder->containsFile($request->get('fileName'))) {
@@ -175,6 +178,21 @@
       $statusCode = -100;
       if ($watermark_position && $watermark_image && $watermark_size) {
         $file = $backend->get(Path::combine($workingFolder->getPath(), $request->get('fileName')));
+
+        if (!$update) {
+
+          $newFilePath_i = 0;
+          do {
+            $newFilePath_suffix = '-watermark' . ( $newFilePath_i ? $newFilePath_i : '' );
+            $newFilePath = pathinfo($file->getPath(), PATHINFO_DIRNAME) . '/' . pathinfo($file->getPath(), PATHINFO_FILENAME) . $newFilePath_suffix . '.' . pathinfo($file->getPath(), PATHINFO_EXTENSION);
+            $newFilePath_i++;
+          }
+          while ($backend->has($newFilePath));
+
+          $backend->copy($file->getPath(), $newFilePath);
+          $file = $backend->get($newFilePath);
+        }
+
         $statusCode = $this->addWatermark($file, $watermark_image, $watermark_position, $watermark_size);
       }
 
@@ -182,5 +200,7 @@
         'status' => $statusCode > 0,
         'statusCode' => $statusCode,
       );
+
     }
+
   }
