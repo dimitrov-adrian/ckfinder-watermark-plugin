@@ -226,12 +226,18 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
             params.fileName = file.get('name');
             params._action = action;
 
+            // Show loader.
+            finder.request('loader:show', { text: finder.lang.Watermark.processingText });
+
             // Make processing request.
             finder.request('command:send', {
               name: 'Watermark',
               folder: file.get('folder'),
               params: params
             }).done(function(response) {
+
+              finder.request('loader:hide');
+
               if (response.status) {
                 var $image = jQuery('#watermark-preview-image', this.$el);
                 var imageUrl = $image.attr('src');
@@ -241,16 +247,7 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
                 this.currentOptions.file = null;
                 this.currentOptions.position = null;
                 finder.request('page:destroy', { name: 'watermark-page' });
-                finder.request('dialog', {
-                  name: 'dialog-watermark-okdialog',
-                  title: finder.lang.Watermark.ok,
-                  template: finder.lang.Watermark.watermarkApplied,
-                  buttons: ['ok']
-                });
-                finder.once('dialog:dialog-watermark-okdialog:ok', function(evt) {
-                  finder.request('dialog:destroy', { name: 'dialog-watermark-dialog' });
-                  finder.request('folder:refreshFiles');
-                });
+                finder.request('folder:refreshFiles');
               }
               else {
                 finder.request('dialog', {
