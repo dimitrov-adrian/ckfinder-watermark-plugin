@@ -1,6 +1,7 @@
 /*
  * CKFinder - Watermark plugin
  * ===========================
+ * Version 1.1
  * https://github.com/dimitrov-adrian/ckfinder-watermark-plugin
  *
  * The MIT License (MIT)
@@ -93,8 +94,12 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
         template += '    <select name="watermark" data-inline="true">';
         template += '    {{~it.watermarks :watermark}}<option value="{{=watermark._index}}">{{=watermark.label}}</option>{{~}}';
         template += '    </select>';
-        template += '    <button name="save" data-inline="true">{{=it.text.saveButtonText}}</button>';
-        template += '    <button name="save-as-new" data-inline="true">{{=it.text.saveAsNewButtonText}}</button>';
+        if (typeof(finder.config.Watermark.overwriteButton) == 'undefined' || finder.config.Watermark.overwriteButton) {
+          template += '<button name="save" data-inline="true">{{=it.text.saveButtonText}}</button>';
+        }
+        if (typeof(finder.config.Watermark.newFileButton) == 'undefined' || finder.config.Watermark.newFileButton) {
+          template += '<button name="save-as-new" data-inline="true">{{=it.text.saveAsNewButtonText}}</button>';
+        }
         template += '    <button name="back" data-inline="true">{{=it.text.backButtonText}}</button>';
         template += '  </div>';
         template += '</div>';
@@ -194,8 +199,8 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
 
                 finder.request('dialog', {
                   name: 'dialog-watermark-confirmdialog',
-                  title: finder.lang.Watermark.error,
-                  template: finder.lang.Watermark.applyConfirm,
+                  title: '',
+                  template: e.currentTarget.name == 'save' ? finder.lang.Watermark.applyConfirm : finder.lang.Watermark.confirm,
                   buttons: ['ok','cancel']
                 });
                 finder.once('dialog:dialog-watermark-confirmdialog:ok', function(evt) {
@@ -225,6 +230,7 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
             var params = this.currentOptions;
             params.fileName = file.get('name');
             params._action = action;
+            params.newfile_suffix = finder.config.Watermark.newFileSuffix || '';
 
             // Show loader.
             finder.request('loader:show', { text: finder.lang.Watermark.processingText });

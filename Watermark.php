@@ -3,6 +3,7 @@
   /*
    * CKFinder - Watermark plugin
    * ===========================
+   * Version 1.1
    * https://github.com/dimitrov-adrian/ckfinder-watermark-plugin
    *
    * The MIT License (MIT)
@@ -116,7 +117,7 @@
           $watermarkNewHeight = $watermarkImage->getHeight();
 
           if ($position[0] == 'middle') {
-            $watermarkY = ceil($uploadedImage->getHeight()/2-$watermarkNewWidth/2);
+            $watermarkY = ceil($uploadedImage->getHeight()/2-$watermarkNewHeight/2);
           }
           elseif ($position[0] == 'bottom') {
             $watermarkY = $uploadedImage->getHeight()-$watermarkNewHeight;
@@ -129,7 +130,7 @@
             $watermarkX = ceil($uploadedImage->getWidth()/2-$watermarkNewWidth/2);
           }
           elseif ($position[1] == 'right') {
-            $watermarkX = $uploadedImage->getWidth()-$watermarkNewHeight;
+            $watermarkX = $uploadedImage->getWidth()-$watermarkNewWidth;
           }
           else {
             $watermarkX = 0;
@@ -168,8 +169,8 @@
       $watermark_image = $request->get('file');
       $watermark_position = $request->get('position');
       $watermark_size = $request->get('size');
+      $watermark_suffix = $request->get('newfile_suffix');
       $update = $request->get('_action') == 'save';
-
       $backend = $workingFolder->getBackend();
       if (!$workingFolder->containsFile($request->get('fileName'))) {
         throw new \Exception('File not found', Error::FILE_NOT_FOUND);
@@ -181,9 +182,12 @@
 
         if (!$update) {
 
+          $watermark_suffix = $watermark_suffix ? $watermark_suffix: '-watermark';
+          $watermark_suffix = preg_replace('#[^\w\s\-]#', '_', $watermark_suffix);
+
           $newFilePath_i = 0;
           do {
-            $newFilePath_suffix = '-watermark' . ( $newFilePath_i ? $newFilePath_i : '' );
+            $newFilePath_suffix = $watermark_suffix . ( $newFilePath_i ? $newFilePath_i : '' );
             $newFilePath = pathinfo($file->getPath(), PATHINFO_DIRNAME) . '/' . pathinfo($file->getPath(), PATHINFO_FILENAME) . $newFilePath_suffix . '.' . pathinfo($file->getPath(), PATHINFO_EXTENSION);
             $newFilePath_i++;
           }

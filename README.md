@@ -23,6 +23,16 @@ config.plugins = [
 ```js
 config.Watermark = {
 
+  // Optional, hide or show save button (default to true)
+  overwriteButton: false,
+
+  // Optional, hide or show save as new file button (default to true)
+  newFileButton: true,
+
+  // Optional, file suffix if save as new file (default to "-watermark")
+  newFileSuffix: '-branded',
+
+  // Required, watermark presets.
   watermarks: [
   
     {
@@ -89,4 +99,4 @@ Agenda of codes and meanings:
 ## FAQ
 
 #### Q: How can I add offset
-A: You can't, it is not supported right now, better option is to prepare watermark images with offset on it.
+A: You can't, it is not supported right now, better option is to prepare watermark images with offset on it, so you have a control of offsets and it will be auto resized according aspect ratio.
