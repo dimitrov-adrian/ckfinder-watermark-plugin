@@ -1,10 +1,11 @@
-# ckfinder-watermark-plugin
+# ckfinder-watermark-plugin (1.2)
 
 An Watermark plugin for [CKFinder](http://ckfinder.com/) with GUI and preview options.
 
 ## Requirements
 - CKFinder 3
-- PHP 5 with GD support
+- PHP ≥ 5.2
+- PHP GD or PHP ImageMagick
 
 ## Add plugin to CKFinder
 
@@ -45,13 +46,14 @@ config.Watermark = {
       // Text label to show in watermark selector.
       label: '<STRING: LABEL FOR WATERMARK>',
       
-      // Max size height/width for watermark in percents of main image.
+      // Max size height/width for watermark in percents/px of main image.
       // Example:
       //   If main image is 1600x1200 and size is set to 10,
       //   then watermark will have max width 160px
       //   and height 120px, if the image is smaller than
       //   this size, then it will not be up-scaled.
-      size: '<STRING: MAX SIZE FOR IMAGE>',
+      //   If value is set in px, then the watermark will not exceed dimensions.
+      size: '<STRING: MAX SIZE FOR IMAGE>[px|%]',
 
       // Set position for this waterark.
       // Value is space separated vertical and horizontal
@@ -89,6 +91,7 @@ When by some reason image could not be processed or something happen on server s
 Agenda of codes and meanings:
 
 > * -100  - Missing request arguments.
+> * -90   - No graphic library.
 > * -11   - Source file is not image.
 > * -12   - Source file is image but not supported.
 > * -21   - Error while fetching watermark file.

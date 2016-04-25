@@ -1,7 +1,6 @@
 /*
  * CKFinder - Watermark plugin
  * ===========================
- * Version 1.1
  * https://github.com/dimitrov-adrian/ckfinder-watermark-plugin
  *
  * The MIT License (MIT)
@@ -148,10 +147,10 @@ CKFinder.define(['jquery', 'backbone', 'marionette', 'doT'], function(jQuery, Ba
 
                     jQuery(this).show();
 
-                    var maxSizePrcnt = data.size ? data.size + '%' : '';
+                    var maxSize = !isNaN(parseFloat(data.size)) && isFinite(data.size) ? data.size + '%' : data.size;
                     jQuery(this).css({
-                      maxWidth: maxSizePrcnt,
-                      maxHeight: maxSizePrcnt,
+                      maxWidth: maxSize,
+                      maxHeight: maxSize,
                       position: 'absolute'
                     });
 

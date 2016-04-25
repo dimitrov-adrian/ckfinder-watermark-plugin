@@ -3,7 +3,6 @@
   /*
    * CKFinder - Watermark plugin
    * ===========================
-   * Version 1.1
    * https://github.com/dimitrov-adrian/ckfinder-watermark-plugin
    *
    * The MIT License (MIT)
@@ -30,6 +29,9 @@
    */
 
   namespace CKSource\CKFinder\Plugin\Watermark;
+
+  // Set time limit to 1.5 minutes because some big gifs.
+  set_time_limit(90);
 
   use CKSource\CKFinder\Acl\Permission;
   use CKSource\CKFinder\CKFinder;
@@ -72,6 +74,66 @@
     }
 
     /**
+     * Calculate info for watermark including maxWidth/maxHeight, width/height and position with coordinates
+     *
+     * @param $watermark_w
+     * @param $watermark_h
+     * @param $image_w
+     * @param $image_h
+     * @param $position
+     * @param $size
+     *
+     * @return array
+     */
+    protected function calculateWatermarkInfo($watermark_w, $watermark_h, $image_w, $image_h, $position, $size) {
+
+      $info = array(
+        'maxWidth' => 0,
+        'maxHeight' => 0,
+        'x' => 0,
+        'y' => 0,
+        'width' => 0,
+        'height' => 0,
+      );
+
+      $size_int = sprintf('%d', $size);
+
+      if (preg_match('#(\d+)px$#', $size, $matches)) {
+        $info['maxWidth'] = $size_int;
+        $info['maxHeight'] = $size_int;
+      }
+      else {
+        $info['maxWidth'] = ceil($image_w*$size_int/100);
+        $info['maxHeight'] = ceil($image_h*$size_int/100);
+      }
+
+      if ($watermark_w > $watermark_h) {
+        $info['width'] = $info['maxWidth'];
+        $info['height'] = floor(($watermark_h/$watermark_w)*$info['maxWidth']);
+      }
+      else {
+        $info['width'] = floor(($watermark_w/$watermark_h)*$info['maxHeight']);
+        $info['height'] = $info['maxHeight'];
+      }
+
+      if ($position[0] == 'middle') {
+        $info['y'] = ceil($image_h/2-$info['height']/2);
+      }
+      elseif ($position[0] == 'bottom') {
+        $info['y'] = $image_h-$info['height'];
+      }
+
+      if ($position[1] == 'center') {
+        $info['x'] = ceil($image_w/2-$info['width']/2);
+      }
+      elseif ($position[1] == 'right') {
+        $info['x'] = $image_w-$info['width'];
+      }
+
+      return $info;
+    }
+
+    /**
      * Watermark processor.
      *
      * @param $file
@@ -81,6 +143,7 @@
      *
      * @return int
      *  -100  - Missing request arguments.
+     *  -90   - No graphic library.
      *  -11   - Source file is not image.
      *  -12   - Source file is image but not supported.
      *  -21   - Error while fetching watermark file.
@@ -91,66 +154,93 @@
      */
     public function addWatermark($file, $watermark, $position, $size) {
 
+      if (!preg_match('#^image\/#i', $file->getMimetype())) {
+        return -11;
+      }
+
       $position = explode(' ', $position);
 
-      if (preg_match('#^image\/#i', $file->getMimetype())) {
-        if (Image::isSupportedExtension($file->getMetadata()['extension'])) {
+      $watermarkImageContent = file_get_contents($watermark);
+      if (!$watermarkImageContent) {
+        return -21;
+      }
 
-          $uploadedImage = Image::create($file->read());
+      if (extension_loaded('imagick')) {
 
-          $watermarkImageContent = file_get_contents($watermark);
-          if (!$watermarkImageContent) {
-            return -21;
-          }
-          $watermarkImage = Image::create($watermarkImageContent);
-          unset($watermarkImageContent);
-          if (!$watermarkImage) {
-            return -22;
-          }
+        $uploadedImage = new \Imagick();
 
-          $watermarkMaxWidth = ceil($uploadedImage->getWidth()*$size/100);
-          $watermarkMaxHeigh = ceil($uploadedImage->getHeight()*$size/100);
-
-          $watermarkImage->resize($watermarkMaxWidth, $watermarkMaxHeigh, 100);
-
-          $watermarkNewWidth = $watermarkImage->getWidth();
-          $watermarkNewHeight = $watermarkImage->getHeight();
-
-          if ($position[0] == 'middle') {
-            $watermarkY = ceil($uploadedImage->getHeight()/2-$watermarkNewHeight/2);
-          }
-          elseif ($position[0] == 'bottom') {
-            $watermarkY = $uploadedImage->getHeight()-$watermarkNewHeight;
-          }
-          else {
-            $watermarkY = 0;
-          }
-
-          if ($position[1] == 'center') {
-            $watermarkX = ceil($uploadedImage->getWidth()/2-$watermarkNewWidth/2);
-          }
-          elseif ($position[1] == 'right') {
-            $watermarkX = $uploadedImage->getWidth()-$watermarkNewWidth;
-          }
-          else {
-            $watermarkX = 0;
-          }
-
-          $processing_status = imagecopyresampled($uploadedImage->getGDImage(), $watermarkImage->getGDImage(), $watermarkX, $watermarkY, 0, 0, $watermarkNewWidth, $watermarkNewHeight, $watermarkNewWidth, $watermarkNewHeight);
-
-          if (!$processing_status) {
-            return -30;
-          }
-
-          return $file->update($uploadedImage->getData()) ? 1 : -31;
-
-        }
-        else {
+        if (!$uploadedImage->readImageBlob($file->read())) {
           return -12;
         }
+        $uploadedImage = $uploadedImage->coalesceImages();
+
+        $watermarkImage = new \Imagick();
+        if (!$watermarkImage->readImageBlob(file_get_contents($watermark))) {
+          return -22;
+        }
+
+        try {
+          $watermarkInfo = $this->calculateWatermarkInfo($watermarkImage->getImageWidth(), $watermarkImage->getImageHeight(), $uploadedImage->getImageWidth(), $uploadedImage->getImageHeight(), $position, $size);
+          $watermarkImage->scaleImage($watermarkInfo['width'], $watermarkInfo['height']);
+
+          $uploadedImageDst = new \Imagick();
+          $uploadedImageDst->setFormat($uploadedImage->getFormat());
+          $uploadedImageDst->setSize($watermarkInfo['width'], $watermarkInfo['height']);
+
+          $uploadedImage = $uploadedImage->coalesceImages();
+          foreach ($uploadedImage as $frame) {
+
+            $uploadedImageDst->addImage($frame->getImage());
+
+            if ($frame->getImageDelay()) {
+              $uploadedImageDst->setImageDelay($frame->getImageDelay());
+            }
+
+            $uploadedImageDst->compositeImage($watermarkImage, \Imagick::COMPOSITE_OVER, $watermarkInfo['x'], $watermarkInfo['y']);
+
+            if ($uploadedImage->hasNextImage()) {
+              $uploadedImageDst->nextImage();
+            }
+
+          }
+
+          $uploadedImage->clear();
+          $uploadedImage->destroy();
+
+          $watermarkImage->clear();
+          $watermarkImage->destroy();
+        }
+        catch (\Exception $e) {
+          return -30;
+        }
+        return $file->update($uploadedImageDst->getImagesBlob()) ? 1 : -31;
       }
+
+      elseif (extension_loaded('gd')) {
+
+        $uploadedImage = Image::create($file->read());
+        if (!$uploadedImage) {
+          return -12;
+        }
+
+        $watermarkImage = Image::create($watermarkImageContent);
+        if (!$watermarkImage) {
+          return -22;
+        }
+
+        $watermarkInfo = $this->calculateWatermarkInfo($watermarkImage->getWidth(), $watermarkImage->getHeight(), $uploadedImage->getWidth(), $uploadedImage->getHeight(), $position, $size);
+        $watermarkImage->resize($watermarkInfo['width'], $watermarkInfo['height'], 100);
+        $processing_status = imagecopyresampled($uploadedImage->getGDImage(), $watermarkImage->getGDImage(), $watermarkInfo['x'], $watermarkInfo['y'], 0, 0, $watermarkInfo['width'], $watermarkInfo['height'], $watermarkInfo['width'], $watermarkInfo['height']);
+
+        if (!$processing_status) {
+          return -30;
+        }
+
+        return $file->update($uploadedImage->getData()) ? 1 : -31;
+      }
+
       else {
-        return -11;
+        return -90;
       }
     }
 
@@ -198,6 +288,12 @@
         }
 
         $statusCode = $this->addWatermark($file, $watermark_image, $watermark_position, $watermark_size);
+
+        // If fail, then delete the new copy.
+        if (!$update && $statusCode <= 0) {
+          $backend->delete($newFilePath);
+        }
+
       }
 
       return array(
